@@ -10,13 +10,17 @@ using namespace std;
 vector<vector<int>> set;
 vector<int> arr;
 
+vector<vector<string>> formattedSets;
 vector<string> formattedSet;
-int n = 10;
+int n = 5;
 
 bool isValid(int row, int column){
 	// Is there already a queen in this column?
 	for(int r = 0; r < row; r++){
-		if(formattedSet[r][column] == 'Q') return false;
+		if(formattedSet[r][column] == 'Q') {
+			return false;
+	
+		}
 	}
 	// Is there already a queen in the 45 degree diagonal?
 	int r = row-1, c = column-1;
@@ -43,15 +47,18 @@ bool isValid(int row, int column){
 
 void getPermutations(int start, int end) {
     if(start == end) {
+	formattedSet.clear();
 	for(int j = 0; j < arr.size(); j++) {
+		string str = "";
 		for(int k = 0; k < n; k++) {
 			if(k != arr[j]) {
-				formattedSet.push_back(".");
+				str += ".";
 			}
 			else {
-				formattedSet.push_back("Q");
+				str += "Q";
 			}
 		}
+		formattedSet.push_back(str);
 	}
 
 	bool valid = true;
@@ -86,16 +93,43 @@ void brute(int n) {
 	  arr.push_back(i);
 	}
       	getPermutations(0,n-1);
+
+	// format solutions back to "." and "Q"
+	for(int i = 0; i < set.size(); i++) {
+		vector<string> temp;
+		for(int j = 0; j < set[i].size(); j++) {
+			for(int k = 0; k < n; k++) {
+				if(k != set[i][j]) {
+					temp.push_back(".");
+				}
+				else {
+					temp.push_back("Q");
+				}
+			}
+		}
+		formattedSets.push_back(temp);
+	}
 }
 
 
 int main() {
-	brute(5);
-
+	brute(n);
   for(int i = 0; i < set.size(); i++) {
 	  for(int j = 0; j<set[i].size();j++) {
 		cout<<set[i][j];
 	  }
 cout<<"\n"<<endl;
+  }
+  for(int i = 0; i < formattedSets.size(); i++) {
+	  int c = 0;
+	for(int j = 0; j < formattedSets[i].size(); j++){
+		if(c == n) {
+			c = 0;
+			cout << ""<<endl;
+		}
+		c++;
+		cout<<formattedSets[i][j];
+	}
+	cout<<"\n"<<endl;
   }
 }

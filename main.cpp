@@ -12,32 +12,11 @@ int n = 0;
 vector<vector<string>> boards;	
 // initializing board to have no queens
 vector<string> current_board;
+//for getting combinations for brute force
+vector<vector<int>> set;
+vector<int> arr;
+
 /* ------------------------------------ */
-
-int getTime(struct timeval *t){
-	return gettimeofday(t, NULL);
-}
-
-int diffTime(struct timeval *start, struct timeval *end, struct timeval *difference){
-	long int diff = (end -> tv_usec + 1000000 * end -> tv_sec) - (start -> tv_usec + 1000000 * start -> tv_sec);
-	difference -> tv_sec = diff / 1000000;
-	difference -> tv_usec = diff % 1000000;
-
-	if(diff < 0){
-		return -1;
-	}
-	return 0;
-}
-
-
-void printBoards(){
-	for(int i = 0; i < boards.size(); i++){
-		cout << "Solution #" << i+1 << ":" << endl;
-		for(int j = 0; j < boards[i].size(); j++){
-			cout << boards[i][j] << endl;
-		}
-	}
-}
 
 bool isValid(int row, int column){
 	// Is there already a queen in this column?
@@ -65,6 +44,116 @@ bool isValid(int row, int column){
 		}
 	}
 	return true;
+}
+
+void getPermutations(int start, int end) {
+    if(start == end) {
+	current_board.clear();
+	for(int j = 0; j < arr.size(); j++) {
+		string str = "";
+		for(int k = 0; k < n; k++) {
+			if(k != arr[j]) {
+				str += ".";
+			}
+			else {
+				str += "Q";
+
+			}
+		}
+		current_board.push_back(str);
+	}
+
+	bool valid = true;
+	for(int i = 0; i < arr.size(); i++) {
+		if(!isValid(i,arr[i])) {
+			valid = false;
+		}
+	}
+	if(valid == true) {
+		set.push_back(arr);
+	}
+	return;
+    }
+    for(int i = start; i <= end; i++) {
+        int temp;
+        temp = arr[i];
+	arr[i] = arr[start];
+	arr[start] = temp;
+
+	getPermutations(start+1,end);
+
+        temp = arr[i];
+	arr[i] = arr[start];
+	arr[start] = temp;
+
+    }
+}
+
+void brute(int n) {
+	// get all possible combinations for placement of queen (one to a row)
+        for(int i = 0; i < n; i++) {
+	  arr.push_back(i);
+	}
+      	getPermutations(0,n-1);
+
+	// format solutions back to "." and "Q"
+	for(int i = 0; i < set.size(); i++) {
+		vector<string> temp;
+		for(int j = 0; j < set[i].size(); j++) {
+			for(int k = 0; k < n; k++) {
+				if(k != set[i][j]) {
+					temp.push_back(".");
+				}
+				else {
+					temp.push_back("Q");
+				}
+			}
+		}
+		boards.push_back(temp);
+	}
+}
+
+
+int getTime(struct timeval *t){
+	return gettimeofday(t, NULL);
+}
+
+int diffTime(struct timeval *start, struct timeval *end, struct timeval *difference){
+	long int diff = (end -> tv_usec + 1000000 * end -> tv_sec) - (start -> tv_usec + 1000000 * start -> tv_sec);
+	difference -> tv_sec = diff / 1000000;
+	difference -> tv_usec = diff % 1000000;
+
+	if(diff < 0){
+		return -1;
+	}
+	return 0;
+}
+
+void printBoardsBrute() {
+	for(int i = 0; i < boards.size(); i++) {
+
+		cout << "Solution #" << i+1 << ":" << endl;
+
+		  int c = 0;
+		for(int j = 0; j < boards[i].size(); j++){
+			if(c == n) {
+				c = 0;
+				cout << ""<<endl;
+			}
+			c++;
+			cout<<boards[i][j];
+		}
+		cout<<"\n"<<endl;
+	}
+}
+
+void printBoards(){
+	for(int i = 0; i < boards.size(); i++){
+		cout << "Solution #" << i+1 << ":" << endl;
+		for(int j = 0; j < boards[i].size(); j++){
+			cout << boards[i][j] << endl;
+		}
+	}
 }
 
 void backtracking(int row){
@@ -106,7 +195,7 @@ int main(int argc, char **argv){
 	getTime(&start);
 	// call brute force
 	if(algorithm == 0){
-
+	 brute(n);
 	}
 	// call back tracking
 	else if(algorithm == 1){
@@ -128,7 +217,13 @@ int main(int argc, char **argv){
 	cout << "Would you like to print out all " << boards.size() << " solutions (Y/N)?" << endl;
 	cin >> ans;
 	if(ans == "Y"){
-		printBoards();
+		if(algorithm == 0) {
+			printBoardsBrute();
+		}
+		else {
+
+			printBoards();
+		}
 	}
 	return 0;
 }
