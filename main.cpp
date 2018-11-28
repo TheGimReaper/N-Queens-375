@@ -193,17 +193,24 @@ int main(int argc, char **argv){
 
 	cout << "Generating solutions . . . " << endl;
 	getTime(&start);
+	
+	string algorithmName;
 	// call brute force
 	if(algorithm == 0){
 	 brute(n);
+
+		algorithmName = "brute force";
 	}
 	// call back tracking
 	else if(algorithm == 1){
 		backtracking(0);
+
+		algorithmName = "backtracking";
 	}
 	// call bit mask
 	else if(algorithm == 2){
-
+	//	bitMask(n);
+		algorithmName = "bit mask";
 	}
 
 	getTime(&end);
@@ -211,7 +218,8 @@ int main(int argc, char **argv){
 	string time = to_string(diff.tv_sec) + "." + to_string(diff.tv_usec) + "s";
 	ofstream oFile;
 	oFile.open("output.txt", ios_base::app);
-	oFile << "backtracking | n = " << n << " | solutions = " << boards.size() << " | " << time << endl;
+
+	oFile << algorithmName << " | n = " << n << " | solutions = " << boards.size() << " | " << time << endl;
 
 	string ans = "";
 	cout << "Would you like to print out all " << boards.size() << " solutions (Y/N)?" << endl;
