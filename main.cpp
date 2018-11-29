@@ -15,6 +15,11 @@ vector<string> current_board;
 //for getting combinations for brute force
 vector<vector<int>> set;
 vector<int> arr;
+//for backtracking optimization
+vector<bool> slashLookup;
+vector<bool> backslashLookup;
+vector<bool> colLookup;
+
 
 /* ------------------------------------ */
 
@@ -156,10 +161,40 @@ void printBoards(){
 	}
 }
 
+bool isValid_opt(int row, int column){
+	if (slashLookup[row+column] 
+	      || backslashLookup[row-column+(n-1)] 
+	      || colLookup[column]){
+		return false;
+	}
+	return true;
+}
+
+void backtracking_opt(int row){
+	if(row == n){
+		boards.push_back(current_board);
+		return;
+	}
+	for(int column = 0; column < n; column++){
+		if(isValid_opt(row, column)){
+			slashLookup[row+column] = true;
+			backslashLookup[row-column+(n-1)] = true;
+			colLookup[column] = true;
+			current_board[row][column] = 'Q';
+			backtracking_opt(row+1);
+			slashLookup[row+column] = false;
+			backslashLookup[row-column+(n-1)] = false;
+			colLookup[column] = false;
+			current_board[row][column] = '.';
+		}
+	}
+}
+
 void backtracking(int row){
 	// Base case, got to end of board
 	if(row == n){
 		boards.push_back(current_board);
+		return;
 	}
 	// Iterate through all columns in the current row
 	for(int column = 0; column < n; column++){
@@ -226,12 +261,12 @@ void bit_masking(int board_size, int ld_conflict, int col_conflict, int rd_confl
 int main(int argc, char **argv){
 	struct timeval start, end, diff;
 	if(argc != 3){
-		cout << "Error: incorrect number of arguments. Usage: ./submission <n> <0/1/2>" << endl;
+		cout << "Error: incorrect number of arguments. Usage: ./submission <n> <0/1/2/3>" << endl;
 		exit(-1);
 	}
 	// size of NxN board
 	n = atoi(argv[1]);
-	// what algorithm to use: 0 = brute force, 1 = backtracking, 2 = bit mask
+	// what algorithm to use: 0 = brute force, 1 = backtracking, 2 = backtracking optimized, 3 = bit mask
 	int algorithm = atoi(argv[2]);
 
 	// initializing board to no queens
@@ -241,17 +276,33 @@ int main(int argc, char **argv){
 
 	cout << "Generating solutions . . . " << endl;
 	getTime(&start);
+	
+	string algorithmName;
 	// call brute force
 	if(algorithm == 0){
 	 brute(n);
+
+		algorithmName = "brute force";
 	}
 	// call back tracking
 	else if(algorithm == 1){
 		backtracking(0);
+
+		algorithmName = "backtracking";
+	}
+	else if(algorithm == 2){
+		vector<bool> s_test(2*n-1, false);
+		//for backtracking optimization
+		slashLookup = s_test;
+		backslashLookup = s_test;
+		colLookup = s_test;
+		backtracking_opt(0);
+		algorithmName = "backtracking optimized";
 	}
 	// call bit mask
-	else if(algorithm == 2){
-
+	else if(algorithm == 3){
+	//	bitMask(n);
+		algorithmName = "bit mask";
 	}
 
 	getTime(&end);
@@ -259,7 +310,8 @@ int main(int argc, char **argv){
 	string time = to_string(diff.tv_sec) + "." + to_string(diff.tv_usec) + "s";
 	ofstream oFile;
 	oFile.open("output.txt", ios_base::app);
-	oFile << "backtracking | n = " << n << " | solutions = " << boards.size() << " | " << time << endl;
+
+	oFile << algorithmName << " | n = " << n << " | solutions = " << boards.size() << " | " << time << endl;
 
 	string ans = "";
 	cout << "Would you like to print out all " << boards.size() << " solutions (Y/N)?" << endl;
