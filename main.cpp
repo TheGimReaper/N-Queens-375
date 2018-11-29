@@ -15,6 +15,12 @@ vector<string> current_board;
 //for getting combinations for brute force
 vector<vector<int>> set;
 vector<int> arr;
+//for backtracking optimization
+vector<vector<int>> slashCode;
+vector<vector<int>> backslashCode;
+vector<bool> slashLookup;
+vector<bool> backslashLookup;
+vector<bool> colLookup;
 
 /* ------------------------------------ */
 
@@ -156,10 +162,37 @@ void printBoards(){
 	}
 }
 
+bool isValid_opt(int row, int column){
+	return !(slashLookup[slashCode[row][column]] 
+	      || backslashLookup[backslashCode[row][column]] 
+	      || colLookup[column]);
+}
+
+void backtracking_opt(int row){
+	if(row == n){
+		boards.push_back(current_board);
+		return;
+	}
+	for(int column = 0; column < n; column++){
+		if(isValid_opt(row, column)){
+			slashLookup[slashCode[row][column]] = true;
+			backslashLookup[backslashCode[row][column]] = true;
+			colLookup[column] = true;
+			current_board[row][column] = 'Q';
+			backtracking_opt(row+1);
+			slashLookup[slashCode[row][column]] = false;
+			backslashLookup[backslashCode[row][column]] = false;
+			colLookup[column] = false;
+			current_board[row][column] = '.';
+		}
+	}
+}
+
 void backtracking(int row){
 	// Base case, got to end of board
 	if(row == n){
 		boards.push_back(current_board);
+		return;
 	}
 	// Iterate through all columns in the current row
 	for(int column = 0; column < n; column++){
@@ -178,12 +211,12 @@ void backtracking(int row){
 int main(int argc, char **argv){
 	struct timeval start, end, diff;
 	if(argc != 3){
-		cout << "Error: incorrect number of arguments. Usage: ./submission <n> <0/1/2>" << endl;
+		cout << "Error: incorrect number of arguments. Usage: ./submission <n> <0/1/2/3>" << endl;
 		exit(-1);
 	}
 	// size of NxN board
 	n = atoi(argv[1]);
-	// what algorithm to use: 0 = brute force, 1 = backtracking, 2 = bit mask
+	// what algorithm to use: 0 = brute force, 1 = backtracking, 2 = backtracking optimized, 3 = bit mask
 	int algorithm = atoi(argv[2]);
 
 	// initializing board to no queens
@@ -207,8 +240,25 @@ int main(int argc, char **argv){
 
 		algorithmName = "backtracking";
 	}
-	// call bit mask
 	else if(algorithm == 2){
+		vector<bool> s_test(2*n-1, false);
+		slashLookup = s_test;
+		backslashLookup = s_test;
+		colLookup = s_test;
+		for(int row = 0; row < n; row++){
+			vector<int> new_row(n, 0);
+			slashCode.push_back(new_row);
+			backslashCode.push_back(new_row);
+			for(int col = 0; col < n; col++){
+				slashCode[row][col] = row + col;
+				backslashCode[row][col] = row - col + (n-1);
+			}
+		}
+		backtracking_opt(0);
+		algorithmName = "backtracking optimized";
+	}
+	// call bit mask
+	else if(algorithm == 3){
 	//	bitMask(n);
 		algorithmName = "bit mask";
 	}
