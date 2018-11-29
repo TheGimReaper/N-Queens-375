@@ -175,6 +175,54 @@ void backtracking(int row){
 	}
 }
 
+void bit_masking(int board_size, int ld_conflict, int col_conflict, int rd_conflict, int num_solutions, int safe_bits, int placement)
+{
+	num_solutions = 0;
+	int board, safe;
+	// ld_conflict is 0 only when there are no other pieces on the board
+	if (ld_conflict == 0) 
+	{
+		// 1 << board_size is 1 followed by <board_size> 0s. 
+		//1 << board_size is <board_size> 1s.
+		board = (1 << board_size) - 1; 
+	}
+	// we already have queens on the board
+	else
+	{
+		board = board_size;
+	}
+	// ~(ld_conflict | col_conflict | rd_conflict) is a summary of all the conflicts. There's a 1 wherever there's a conflict.
+	// Flipping this indicates all valid positions.
+	// & with board to get all possible usable bits.
+	safe = (~(ld_conflict | col_conflict | rd_conflict)) & board; 
+	while (safe != 0)
+	{
+		/** 
+		 * Note to self: Two's complement subtraction involves flipping the bits and adding one
+		 * So if we flip the bits, we would get a 0 in every position there was a 1
+		 * If we add one to the flipped bits, we would get a 0 in everywhere where there used to be a 1
+		 * up to the point that we find the first 0. That first 0 becomes a 1. 
+		 * By &ing that with safe, we isolate this first bit which has become a 1, i.e. the least significant 1.
+		 * This 1 represents the next place we will put a queen, since we need to go through them all anyway, I guess.
+		**/
+
+		// Bit operations be like: "just don't be bad lol"
+		// "Just get a pentakill lol"
+		// I cry every time.
+
+		// So this picks the next place we'll put a queen
+		placement = safe & (safe * -1);
+		
+		// sets safe to the placement, considering that the bit chosen in placement should be a 1 because of the &
+		safe = placement ^ safe;
+
+	
+		bit_masking(board_size, (ld_conflict | placement) << 1, 
+		(col_conflict | placement), (rd_conflict | board) >> 1, sum, safe, placement);
+
+	}
+}
+
 int main(int argc, char **argv){
 	struct timeval start, end, diff;
 	if(argc != 3){
