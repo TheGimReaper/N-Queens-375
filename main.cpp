@@ -16,11 +16,10 @@ vector<string> current_board;
 vector<vector<int>> set;
 vector<int> arr;
 //for backtracking optimization
-vector<vector<int>> slashCode;
-vector<vector<int>> backslashCode;
 vector<bool> slashLookup;
 vector<bool> backslashLookup;
 vector<bool> colLookup;
+
 
 /* ------------------------------------ */
 
@@ -163,9 +162,12 @@ void printBoards(){
 }
 
 bool isValid_opt(int row, int column){
-	return !(slashLookup[slashCode[row][column]] 
-	      || backslashLookup[backslashCode[row][column]] 
-	      || colLookup[column]);
+	if (slashLookup[row+column] 
+	      || backslashLookup[row-column+(n-1)] 
+	      || colLookup[column]){
+		return false;
+	}
+	return true;
 }
 
 void backtracking_opt(int row){
@@ -175,13 +177,13 @@ void backtracking_opt(int row){
 	}
 	for(int column = 0; column < n; column++){
 		if(isValid_opt(row, column)){
-			slashLookup[slashCode[row][column]] = true;
-			backslashLookup[backslashCode[row][column]] = true;
+			slashLookup[row+column] = true;
+			backslashLookup[row-column+(n-1)] = true;
 			colLookup[column] = true;
 			current_board[row][column] = 'Q';
 			backtracking_opt(row+1);
-			slashLookup[slashCode[row][column]] = false;
-			backslashLookup[backslashCode[row][column]] = false;
+			slashLookup[row+column] = false;
+			backslashLookup[row-column+(n-1)] = false;
 			colLookup[column] = false;
 			current_board[row][column] = '.';
 		}
@@ -242,18 +244,10 @@ int main(int argc, char **argv){
 	}
 	else if(algorithm == 2){
 		vector<bool> s_test(2*n-1, false);
+		//for backtracking optimization
 		slashLookup = s_test;
 		backslashLookup = s_test;
 		colLookup = s_test;
-		for(int row = 0; row < n; row++){
-			vector<int> new_row(n, 0);
-			slashCode.push_back(new_row);
-			backslashCode.push_back(new_row);
-			for(int col = 0; col < n; col++){
-				slashCode[row][col] = row + col;
-				backslashCode[row][col] = row - col + (n-1);
-			}
-		}
 		backtracking_opt(0);
 		algorithmName = "backtracking optimized";
 	}
