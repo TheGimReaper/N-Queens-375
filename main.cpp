@@ -210,28 +210,32 @@ void backtracking(int row){
 	}
 }
 
-void bit_masking(int board_size, int ld_conflict, int col_conflict, int rd_conflict, int num_solutions, int safe_bits, int placement)
-{
-	num_solutions = 0;
+void bitMask(int board_size, int ld_conflict, int col_conflict, int rd_conflict, 
+int num_solutions, int safe_bits, int placement, vector<string> curr_board) {
+	//cout << "col_conflict: " << col_conflict << endl;
+	//num_solutions = 0;
 	int board, safe;
+	string curr_row = "";
 	// ld_conflict is 0 only when there are no other pieces on the board
-	if (ld_conflict == 0) 
-	{
+	/*
+	if (ld_conflict == 0) {
 		// 1 << board_size is 1 followed by <board_size> 0s. 
 		//1 << board_size is <board_size> 1s.
 		board = (1 << board_size) - 1; 
 	}
 	// we already have queens on the board
-	else
-	{
+	else {
 		board = board_size;
 	}
+	*/
+	board = (1 << board_size) - 1;
 	// ~(ld_conflict | col_conflict | rd_conflict) is a summary of all the conflicts. There's a 1 wherever there's a conflict.
 	// Flipping this indicates all valid positions.
 	// & with board to get all possible usable bits.
 	safe = (~(ld_conflict | col_conflict | rd_conflict)) & board; 
-	while (safe != 0)
-	{
+	while (safe != 0) {
+		//cout << "potato" << endl;
+		
 		/** 
 		 * Note to self: Two's complement subtraction involves flipping the bits and adding one
 		 * So if we flip the bits, we would get a 0 in every position there was a 1
@@ -241,21 +245,55 @@ void bit_masking(int board_size, int ld_conflict, int col_conflict, int rd_confl
 		 * This 1 represents the next place we will put a queen, since we need to go through them all anyway, I guess.
 		**/
 
-		// Bit operations be like: "just don't be bad lol"
-		// "Just get a pentakill lol"
-		// I cry every time.
+		/** 
+		 * Bit operations be like: "just don't be bad lol"
+		 * "Just get a pentakill lol"
+		 * I cry every time.
+		**/
 
 		// So this picks the next place we'll put a queen
+		//cout << safe << endl;
 		placement = safe & (safe * -1);
 		
 		// sets safe to the placement, considering that the bit chosen in placement should be a 1 because of the &
-		safe = placement ^ safe;
+		safe = safe ^ placement;
+		//safe = safe & placement;
+		cout << "placement " << placement << endl;
+		cout << "safe " << safe << endl;
+		// create the string representing the placement of the queen in the current row
+		int temp = safe;
+		bool found = false;
+		/*
+		// go through the current row's placement. Put a . for every time there's a 0 and a Q when encounter the 1
+		for (int i = 0; i < board_size; i++) {
+			// (temp >> 1) > 0 when we have not shifted past the 1 and !found. If found, we've already encountered the 1
+			// and there should be no more 1s afterward 
+			if ((temp >> 1) > 0 || found) {
+				curr_row = "." + curr_row;
+			}
 
-	
-		bit_masking(board_size, (ld_conflict | placement) << 1, 
-		(col_conflict | placement), (rd_conflict | board) >> 1, sum, safe, placement);
-
+			// we found the 1
+			else {
+				curr_row = "Q" + curr_row;
+				found = true;
+			}
+		}
+		curr_board.push_back(curr_row);
+		*/
+		// all columns are occupied, so there should be a 1 in all bits
+		cout << "col " << col_conflict << endl;
+		// shift ld and rd conflict by one because we are going down the the next row, so the diagonal conflicts would be 
+		// one row higher or lower than the pevious
+		bitMask(board_size, (ld_conflict | placement) << 1, 
+		(col_conflict | placement), (rd_conflict | placement) >> 1, num_solutions, safe, placement, curr_board);
 	}
+	if (col_conflict == board)
+	{
+			//cout << "hot potato" << endl;
+			num_solutions++;
+			boards.push_back(curr_board);
+	}
+	//cout << "no potato" << endl;
 }
 
 int main(int argc, char **argv){
@@ -301,7 +339,10 @@ int main(int argc, char **argv){
 	}
 	// call bit mask
 	else if(algorithm == 3){
-	//	bitMask(n);
+		vector<string> temp;
+		int sum = 0;
+		bitMask(n, 0, 0, 0, sum, 0, 0, temp);
+		cout << sum << endl;
 		algorithmName = "bit mask";
 	}
 
