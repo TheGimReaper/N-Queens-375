@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 bit mask | n = 1 | solutions = 1 | 0.408s
 bit mask | n = 1 | solutions = 1 | 0.539s
 bit mask | n = 2 | solutions = 0 | 0.1212s
@@ -103,3 +104,19 @@ bit mask | n = 5 | solutions = 10 | 0.1891s
 bit mask | n = 5 | solutions = 10 | 0.1587s
 bit mask | n = 5 | solutions = 10 | 0.361s
 bit mask | n = 5 | solutions = 10 | 0.109s
+=======
+bit mask | n = 1 | solutions = 1 | 0.23s
+bit mask | n = 2 | solutions = 0 | 0.31s
+bit mask | n = 3 | solutions = 0 | 0.44s
+bit mask | n = 4 | solutions = 2 | 0.92s
+brute force | n = 12 | solutions = 14200 | 2027.94017s
+bit mask | n = 5 | solutions = 10 | 0.409s
+bit mask | n = 6 | solutions = 4 | 0.879s
+bit mask | n = 7 | solutions = 40 | 0.3359s
+bit mask | n = 8 | solutions = 92 | 0.11820s
+bit mask | n = 9 | solutions = 352 | 0.50383s
+bit mask | n = 10 | solutions = 724 | 0.211575s
+bit mask | n = 11 | solutions = 2680 | 1.17355s
+bit mask | n = 12 | solutions = 14200 | 5.497406s
+bit mask | n = 13 | solutions = 73712 | 34.142973s
+>>>>>>> c2aac7391caf505b821a0c2efb85fe6efcc52232

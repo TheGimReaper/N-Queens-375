@@ -90,7 +90,6 @@ void getPermutations(int start, int end) {
         temp = arr[i];
 	arr[i] = arr[start];
 	arr[start] = temp;
-
     }
 }
 
@@ -200,7 +199,7 @@ void backtracking(int row){
 		return;
 	}
 	// Iterate through all columns in the current row
-	for(int column = 0; column < n; column++){
+	for(int column = 0; column < n; ++column){
 		// Checks if queen can be placed at [row][column]
 		if(isValid(row, column)){
 			// A queen can be placed here
