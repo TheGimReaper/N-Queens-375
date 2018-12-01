@@ -15,6 +15,11 @@ vector<string> current_board;
 //for getting combinations for brute force
 vector<vector<int>> set;
 vector<int> arr;
+//for backtracking optimization
+vector<bool> slashLookup;
+vector<bool> backslashLookup;
+vector<bool> colLookup;
+
 
 /* ------------------------------------ */
 
@@ -155,6 +160,35 @@ void printBoards(){
 	}
 }
 
+bool isValid_opt(int row, int column){
+	if (slashLookup[row+column] 
+	      || backslashLookup[row-column+(n-1)] 
+	      || colLookup[column]){
+		return false;
+	}
+	return true;
+}
+
+void backtracking_opt(int row){
+	if(row == n){
+		boards.push_back(current_board);
+		return;
+	}
+	for(int column = 0; column < n; column++){
+		if(isValid_opt(row, column)){
+			slashLookup[row+column] = true;
+			backslashLookup[row-column+(n-1)] = true;
+			colLookup[column] = true;
+			current_board[row][column] = 'Q';
+			backtracking_opt(row+1);
+			slashLookup[row+column] = false;
+			backslashLookup[row-column+(n-1)] = false;
+			colLookup[column] = false;
+			current_board[row][column] = '.';
+		}
+	}
+}
+
 void backtracking(int row){
 	// Base case, got to end of board
 	if(row == n){
@@ -175,15 +209,101 @@ void backtracking(int row){
 	}
 }
 
+void bitMask(int board_size, int ld_conflict, int col_conflict, int rd_conflict, 
+int num_solutions, int safe_bits, int placement, vector<string> curr_board) {
+	//cout << "col_conflict: " << col_conflict << endl;
+	//num_solutions = 0;
+	int board, safe;
+	string curr_row = "";
+	// ld_conflict is 0 only when there are no other pieces on the board
+	/*
+	if (ld_conflict == 0) {
+		// 1 << board_size is 1 followed by <board_size> 0s. 
+		//1 << board_size is <board_size> 1s.
+		board = (1 << board_size) - 1; 
+	}
+	// we already have queens on the board
+	else {
+		board = board_size;
+	}
+	*/
+	board = (1 << board_size) - 1;
+	// ~(ld_conflict | col_conflict | rd_conflict) is a summary of all the conflicts. There's a 1 wherever there's a conflict.
+	// Flipping this indicates all valid positions.
+	// & with board to get all possible usable bits.
+	safe = (~(ld_conflict | col_conflict | rd_conflict)) & board; 
+	while (safe != 0) {
+		//cout << "potato" << endl;
+		
+		/** 
+		 * Note to self: Two's complement subtraction involves flipping the bits and adding one
+		 * So if we flip the bits, we would get a 0 in every position there was a 1
+		 * If we add one to the flipped bits, we would get a 0 in everywhere where there used to be a 1
+		 * up to the point that we find the first 0. That first 0 becomes a 1. 
+		 * By &ing that with safe, we isolate this first bit which has become a 1, i.e. the least significant 1.
+		 * This 1 represents the next place we will put a queen, since we need to go through them all anyway, I guess.
+		**/
+
+		/** 
+		 * Bit operations be like: "just don't be bad lol"
+		 * "Just get a pentakill lol"
+		 * I cry every time.
+		**/
+
+		// So this picks the next place we'll put a queen
+		//cout << safe << endl;
+		placement = safe & (safe * -1);
+		
+		// sets safe to the placement, considering that the bit chosen in placement should be a 1 because of the &
+		safe = safe ^ placement;
+		//safe = safe & placement;
+		cout << "placement " << placement << endl;
+		cout << "safe " << safe << endl;
+		// create the string representing the placement of the queen in the current row
+		int temp = safe;
+		bool found = false;
+		/*
+		// go through the current row's placement. Put a . for every time there's a 0 and a Q when encounter the 1
+		for (int i = 0; i < board_size; i++) {
+			// (temp >> 1) > 0 when we have not shifted past the 1 and !found. If found, we've already encountered the 1
+			// and there should be no more 1s afterward 
+			if ((temp >> 1) > 0 || found) {
+				curr_row = "." + curr_row;
+			}
+
+			// we found the 1
+			else {
+				curr_row = "Q" + curr_row;
+				found = true;
+			}
+		}
+		curr_board.push_back(curr_row);
+		*/
+		// all columns are occupied, so there should be a 1 in all bits
+		cout << "col " << col_conflict << endl;
+		// shift ld and rd conflict by one because we are going down the the next row, so the diagonal conflicts would be 
+		// one row higher or lower than the pevious
+		bitMask(board_size, (ld_conflict | placement) << 1, 
+		(col_conflict | placement), (rd_conflict | placement) >> 1, num_solutions, safe, placement, curr_board);
+	}
+	if (col_conflict == board)
+	{
+			//cout << "hot potato" << endl;
+			num_solutions++;
+			boards.push_back(curr_board);
+	}
+	//cout << "no potato" << endl;
+}
+
 int main(int argc, char **argv){
 	struct timeval start, end, diff;
 	if(argc != 3){
-		cout << "Error: incorrect number of arguments. Usage: ./submission <n> <0/1/2>" << endl;
+		cout << "Error: incorrect number of arguments. Usage: ./submission <n> <0/1/2/3>" << endl;
 		exit(-1);
 	}
 	// size of NxN board
 	n = atoi(argv[1]);
-	// what algorithm to use: 0 = brute force, 1 = backtracking, 2 = bit mask
+	// what algorithm to use: 0 = brute force, 1 = backtracking, 2 = backtracking optimized, 3 = bit mask
 	int algorithm = atoi(argv[2]);
 
 	// initializing board to no queens
@@ -207,9 +327,21 @@ int main(int argc, char **argv){
 
 		algorithmName = "backtracking";
 	}
-	// call bit mask
 	else if(algorithm == 2){
-	//	bitMask(n);
+		vector<bool> s_test(2*n-1, false);
+		//for backtracking optimization
+		slashLookup = s_test;
+		backslashLookup = s_test;
+		colLookup = s_test;
+		backtracking_opt(0);
+		algorithmName = "backtracking optimized";
+	}
+	// call bit mask
+	else if(algorithm == 3){
+		vector<string> temp;
+		int sum = 0;
+		bitMask(n, 0, 0, 0, sum, 0, 0, temp);
+		cout << sum << endl;
 		algorithmName = "bit mask";
 	}
 
