@@ -257,8 +257,8 @@ int num_solutions, int safe_bits, int placement, vector<string> curr_board) {
 		// sets safe to the placement, considering that the bit chosen in placement should be a 1 because of the &
 		safe = safe ^ placement;
 		//safe = safe & placement;
-		cout << "placement " << placement << endl;
-		cout << "safe " << safe << endl;
+		//cout << "placement " << placement << endl;
+		//cout << "safe " << safe << endl;
 		// create the string representing the placement of the queen in the current row
 		int temp = safe;
 		bool found = false;
@@ -280,7 +280,7 @@ int num_solutions, int safe_bits, int placement, vector<string> curr_board) {
 		curr_board.push_back(curr_row);
 		*/
 		// all columns are occupied, so there should be a 1 in all bits
-		cout << "col " << col_conflict << endl;
+		//cout << "col " << col_conflict << endl;
 		// shift ld and rd conflict by one because we are going down the the next row, so the diagonal conflicts would be 
 		// one row higher or lower than the pevious
 		bitMask(board_size, (ld_conflict | placement) << 1, 
